@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "typeRoots": ["./node_modules/@types"],
+    "jsx": "react-jsx",
+    "paths": {
+      "@playwright-isomorphic/*": ["./src/generated/playwright-core/src/utils/isomorphic/*"],
+      "@isomorphic/*": ["./src/generated/playwright-core/src/utils/isomorphic/*"],
+      "@playwright-injected/*": ["./src/generated/injected/src/*"]
+    }
+  },
+  "include": ["src", "app"],
+  "exclude": ["playwright"]
+}

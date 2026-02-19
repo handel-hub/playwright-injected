@@ -1,0 +1,67 @@
+{
+  "name": "playwright-injected",
+  "version": "0.0.0",
+  "description": "Playwright's browser-side engine (InjectedScript, selector engine, locator utils, accessibility/ARIA utils, DOM utils) extracted as a standalone module.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "rm -rf dist && vite build",
+    "sync": "node scripts/sync.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    },
+    "./virtual-playwright-injected": {
+      "types": "./dist/virtual-playwright-injected.d.ts"
+    },
+    "./_types/*": {
+      "types": "./dist/_types/*.d.ts"
+    }
+  },
+  "keywords": [
+    "playwright",
+    "selector",
+    "locator",
+    "codegen",
+    "testing",
+    "accessibility",
+    "aria",
+    "getByRole",
+    "getByText",
+    "getByTestId",
+    "DOM"
+  ],
+  "license": "MIT",
+  "author": "Moshe Kolodny",
+  "devDependencies": {
+    "@types/node": "^25.3.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "playwright-core": "^1.58.2",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kolodny/playwright-injected.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kolodny/playwright-injected/issues"
+  },
+  "homepage": "https://github.com/kolodny/playwright-injected#readme"
+}
