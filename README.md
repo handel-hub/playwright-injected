@@ -9,6 +9,14 @@ Playwright's browser-side engine extracted as a standalone module. Includes the 
 
 Playwright's locator generation, ARIA snapshots, and DOM inspection are all internal — there's no public API to use them, and no way to run them in the browser. This package extracts them as a standalone module you can import and call directly, in the browser without Playwright installed.
 
+**Use cases:**
+
+- **AI / LLM browser agents** — feed `ariaSnapshot()` output to an LLM for structured page understanding, generate selectors for agent actions
+- **Accessibility inspection** — get accessible names, roles, descriptions, and visibility for any DOM element, using the same logic as Playwright's assertions
+- **Custom selector generation** — get all candidate selectors for an element and apply your own prioritization logic, use custom test ID attributes (`data-cy`, `data-e2e`, `data-qa`, etc.)
+- **Browser extensions** — embed Playwright's selector engine and inspector in a Chrome extension without a full Playwright install
+- **Locator conversion** — convert between internal selectors and human-readable locator strings across JavaScript, Python, Java, and C#
+
 ## Install
 
 ```bash
@@ -38,7 +46,7 @@ import {
 const injected = new InjectedScript(window, {
   isUnderTest: false,
   sdkLanguage: 'javascript',
-  testIdAttributeName: 'data-testid',
+  testIdAttributeName: 'data-testid', // configurable: 'data-cy', 'data-e2e', etc.
   stableRafCount: 0,
   browserName: 'chromium',
   customEngines: [],
@@ -48,8 +56,9 @@ const injected = new InjectedScript(window, {
 
 const el = document.querySelector('button');
 const { selector, selectors } = injected.generateSelector(el);
-// selector  => 'internal:role=button[name="Submit"i]'
+// selector  => 'internal:role=button[name="Submit"i]'   (best match)
 // selectors => ['internal:role=button[name="Submit"i]', '#submit-btn', ...]
+//              (all candidates — filter/reorder for custom prioritization)
 
 // --- Convert selectors <-> locator strings ---
 
@@ -78,10 +87,15 @@ injected.elementState(el, 'visible'); // { matches: true, received: 'visible' }
 injected.elementState(el, 'enabled'); // { matches: true, received: 'enabled' }
 
 // --- Accessibility ---
+// Same logic that powers Playwright's toHaveAccessibleName, toHaveRole, etc.
 
 getAriaRole(el); // 'button'
 getElementAccessibleName(el, false); // 'Submit'
 isElementVisible(el); // true
+
+// --- ARIA snapshots ---
+// Structured page representation useful for LLM-driven agents
+
 injected.ariaSnapshot(el, { mode: 'ai' });
 // => '- button "Submit" [ref=e1]'
 
