@@ -93,9 +93,9 @@ parseSelector('internal:role=button[name="OK"i]');
 
 See `app/playwright-helpers.ts` for a more complete usage example showing how to build an element inspector on top of the library.
 
-## Vite plugin (build from your own `playwright-core`)
+## Vite plugin (advanced)
 
-If you already have `playwright-core` installed, you can use the Vite plugin to bundle directly from your version instead of using the pre-bundled code:
+> Most users should use the main `playwright-injected` import above — it's pre-bundled and works out of the box with no extra setup. The Vite plugin is only needed if you want to pin to a specific `playwright-core` version you already have installed and bundle directly from its source:
 
 ```ts
 // vite.config.ts
