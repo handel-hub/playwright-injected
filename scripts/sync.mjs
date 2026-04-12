@@ -182,11 +182,25 @@ const dtsCount = execSync(`find ${OUT_DIR} -name "*.d.ts" | wc -l`)
   .trim();
 console.log(`  ${dtsCount} .d.ts files generated`);
 
-// --- Step 4: Record source git hash ---
+// --- Step 4: Record source git hash & sync package version ---
 
 const cwd = PW;
 const gitHash = execSync('git rev-parse HEAD', { cwd }).toString().trim();
 const gitDate = execSync('git log -1 --format=%ci', { cwd }).toString().trim();
+
+// Derive version from the playwright git tag (e.g. "v1.59.1" -> "1.59.1")
+const gitTag = execSync('git describe --tags --exact-match HEAD', { cwd }).toString().trim();
+const version = gitTag.replace(/^v/, '');
+if (!/^\d+\.\d+\.\d+/.test(version)) {
+  console.error(`Warning: HEAD is not on a semver tag (got "${gitTag}"). Skipping package.json version update.`);
+} else {
+  const pkgPath = path.join(ROOT, 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+  pkg.version = version;
+  pkg.devDependencies['playwright-core'] = version;
+  fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n');
+  console.log(`\npackage.json version set to ${version} (playwright-core: ${version})`);
+}
 const info = Object.entries({ SOURCE_HASH: gitHash, SOURCE_DATE: gitDate });
 fs.appendFileSync(
   path.join(OUT_DIR, 'playwright-bundle.d.ts'),
