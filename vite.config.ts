@@ -4,6 +4,7 @@ import {
   readFileSync,
   readdirSync,
   writeFileSync,
+  existsSync,
 } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -28,11 +29,32 @@ export default defineConfig({
       name: 'generate-dts',
       closeBundle() {
         const generatedDir = resolve(__dirname, 'src/generated');
-        const isoSrcDir = resolve(
-          generatedDir,
-          'playwright-core/src/utils/isomorphic',
-        );
-        const injSrcDir = resolve(generatedDir, 'injected/src');
+        
+        // Updated to include 'packages/' due to rootDir: '.' in tsconfig
+        const injSrcDir = resolve(generatedDir, 'packages/injected/src');
+
+        // Auto-detect generated isomorphic directory
+        const possibleIsoPaths = [
+          'packages/isomorphic',
+          'packages/isomorphic/src',
+          'packages/playwright/src/isomorphic',
+          'packages/utils/src/isomorphic',
+          'packages/playwright-core/src/utils/isomorphic',
+          'packages/playwright-core/src/isomorphic',
+        ];
+
+        let isoSrcDir = '';
+        for (const p of possibleIsoPaths) {
+          const testPath = resolve(generatedDir, p);
+          if (existsSync(testPath)) {
+            isoSrcDir = testPath;
+            break;
+          }
+        }
+
+        if (!isoSrcDir) {
+          throw new Error('Could not auto-detect the generated isomorphic directory in src/generated');
+        }
 
         const typesDir = resolve(__dirname, 'dist/_types');
         const injDestDir = resolve(typesDir, 'injected');
