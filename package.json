@@ -63,5 +63,8 @@
   "bugs": {
     "url": "https://github.com/kolodny/playwright-injected/issues"
   },
-  "homepage": "https://github.com/kolodny/playwright-injected#readme"
+  "homepage": "https://github.com/kolodny/playwright-injected#readme",
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
 }
