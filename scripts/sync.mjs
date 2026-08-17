@@ -22,17 +22,57 @@ const PW = path.join(ROOT, 'playwright');
 const INJECTED_SRC = path.join(PW, 'packages', 'injected', 'src');
 const OUT_DIR = path.join(ROOT, 'src', 'generated');
 
+const args = process.argv.slice(2);
+const isMain = args.includes('--main');
+const versionIndex = args.indexOf('--version');
+const versionArg = versionIndex !== -1 ? args[versionIndex + 1] : null;
+
+let targetRef = 'main';
+
+if (isMain) {
+  targetRef = 'main';
+} else if (versionArg) {
+  targetRef = versionArg;
+} else {
+  console.log('Finding latest stable Playwright release...');
+  const output = execSync('git ls-remote --tags --refs https://github.com/microsoft/playwright.git').toString();
+  const tags = output
+    .split('\n')
+    .map(line => line.split('\t')[1])
+    .filter(ref => ref && ref.startsWith('refs/tags/v'))
+    .map(ref => ref.replace('refs/tags/', ''))
+    .filter(tag => /^v\d+\.\d+\.\d+$/.test(tag));
+
+  tags.sort((a, b) => {
+    const partsA = a.substring(1).split('.').map(Number);
+    const partsB = b.substring(1).split('.').map(Number);
+    for (let i = 0; i < 3; i++) {
+      if (partsA[i] !== partsB[i]) return partsA[i] - partsB[i];
+    }
+    return 0;
+  });
+
+  targetRef = tags[tags.length - 1];
+  console.log(`Latest stable release found: ${targetRef}`);
+}
+
 // --- Step 1: Ensure playwright repo exists ---
 
 if (!fs.existsSync(path.join(PW, 'packages'))) {
-  console.log('Cloning playwright repo...');
+  console.log(`Cloning playwright repo at ${targetRef}...`);
   execSync(
-    'git clone --depth 1 https://github.com/microsoft/playwright.git playwright',
+    `git clone --depth 1 --branch ${targetRef} https://github.com/microsoft/playwright.git playwright`,
     {
       cwd: ROOT,
       stdio: 'inherit',
     },
   );
+  console.log('Installing playwright dependencies...');
+  execSync('npm install', { cwd: PW, stdio: 'inherit' });
+} else {
+  console.log(`Fetching ${targetRef} in existing playwright repo...`);
+  execSync(`git fetch --depth 1 origin ${targetRef}`, { cwd: PW, stdio: 'inherit' });
+  execSync(`git reset --hard FETCH_HEAD`, { cwd: PW, stdio: 'inherit' });
   console.log('Installing playwright dependencies...');
   execSync('npm install', { cwd: PW, stdio: 'inherit' });
 }
@@ -257,4 +297,6 @@ fs.appendFileSync(
   info.map(([k, v]) => `export const PW_${k} = '${v}';`).join('\n'),
 );
 console.log(`\nPlaywright source: ${gitHash.slice(0, 8)} (${gitDate})`);
-console.log('Done.');
+
+console.log('\nSync complete.');
+
